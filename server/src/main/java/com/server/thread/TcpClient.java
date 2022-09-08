@@ -51,7 +51,7 @@ public class TcpClient implements Callable<String> {
                             outputMap.put("returnCode", true);
                             Object object = outputMap;
                             objectOutputStream.writeObject(object);
-                            System.out.println("*** Connection established with client on port : " +port + " ***");
+                            System.out.println("*** Connection established with client on port : " +port);
                         }
                         if(packet != null && packet.equals(PacketType.SUBSCRIBE)) {
                             Subscriber newSubscriber = new Subscriber();
@@ -91,15 +91,15 @@ public class TcpClient implements Callable<String> {
                                     messageDto.setMessage(message);
                                     BootStrap.publishMessageQueue.add(messageDto);
 
-                                    System.out.println("*** Message added in publish queue ***");
+                                    System.out.println("*** Message added in publish queue");
                                 } else{
                                     // A message is always discarded whose topic exists but have no subscribers
                                     // Example : whatsapp group
-                                    System.out.println("*** Topic exists but have no subscribers ***");
+                                    System.out.println("*** Topic exists but have no subscribers");
                                 }
                             } else{
                                 // A message is always discarded whose topic does not exist
-                                System.out.println("*** Topic does not exists ***");
+                                System.out.println("*** Topic does not exists");
                             }
                         }
                         if(packet != null && packet.equals(PacketType.UNSUBSCRIBE)) {
@@ -111,10 +111,10 @@ public class TcpClient implements Callable<String> {
                     }
                 }
             }
-            System.out.print("*** Client is closing ***");
+            System.out.print("*** Client is closing");
 
         } catch (IOException e) {
-            System.out.println("*** Exception when trying to listen on port:" + e.getMessage() + " ***");
+            System.out.println("*** Exception when trying to listen on port:" + e.getMessage());
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

@@ -25,7 +25,7 @@ public class BootStrap {
     public static final LinkedBlockingQueue<Message> publishMessageQueue = new LinkedBlockingQueue<>();
 
     public static void startMqttServer() {
-        System.out.println("*** Server Started ***");
+        System.out.println("*** Server Started");
         try {
             ExecutorService publishQueueExecutor = Executors.newFixedThreadPool(10);
             publishQueueExecutor.submit(new Publisher());

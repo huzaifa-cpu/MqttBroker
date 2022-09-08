@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 public class Writer extends Thread {
+
     private Socket clientSocket;
     private ClientApplication client;
 
