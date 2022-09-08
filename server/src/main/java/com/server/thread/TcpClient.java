@@ -34,69 +34,84 @@ public class TcpClient implements Callable<String> {
             while(!Thread.interrupted()) {
                 while ((inputObject = objectInputStream.readObject()) != null) {
 
-                    Map<String, Object> outputMap = new HashMap();
                     Map inputMap = (Map) inputObject;
                     String packetValue = (String) inputMap.get("packet");
-                    String topic = (String) inputMap.get("topic");
-                    String message = (String) inputMap.get("message");
-                    String port = (String) inputMap.get("port");
+                    if(packetValue != null && !packetValue.isEmpty()){
+                        packetValue = packetValue.trim();
+                        PacketType packet = PacketType.findByValue(packetValue);
+                        String topic = (String) inputMap.get("topic");
+                        String message = (String) inputMap.get("message");
+                        String port = (String) inputMap.get("port");
 
-                    PacketType packet = PacketType.findByValue(packetValue);
+                        System.out.println("Client: " + inputMap);
+                        Map<String, Object> outputMap = new HashMap();
 
-                    System.out.println("Client: " + inputMap);
-
-                    if (PacketType.CONNECT.equals(packet)) {
-                        outputMap.put("packet", PacketType.CONNACK.getValue());
-                        outputMap.put("returnCode", true);
-                        Object object = outputMap;
-                        objectOutputStream.writeObject(object);
-                        System.out.println("Connection established with client port : " +port);
-                    }
-                    if (PacketType.SUBSCRIBE.equals(packet)) {
-                        Subscriber newSubscriber = new Subscriber();
-                        newSubscriber.setObjectOutputStream(objectOutputStream);
-                        if (BootStrap.topicSubscriberRegistry.containsKey(topic)) {
-                            Set<Subscriber> existingSubscribers = BootStrap.topicSubscriberRegistry.get(topic);
-                            if (existingSubscribers != null) {
-                                existingSubscribers.add(newSubscriber);
-                                BootStrap.topicSubscriberRegistry.put(topic, existingSubscribers);
-                            }
-                        } else {
-                            Set<Subscriber> newSubscribers = new HashSet<>();
-                            newSubscribers.add(newSubscriber);
-                            BootStrap.topicSubscriberRegistry.put(topic, newSubscribers);
+                        if(packet != null && packet.equals(PacketType.CONNECT)) {
+                            outputMap.put("packet", PacketType.CONNACK.getValue());
+                            outputMap.put("returnCode", true);
+                            Object object = outputMap;
+                            objectOutputStream.writeObject(object);
+                            System.out.println("Connection established with client on port no : " +port);
                         }
+                        if(packet != null && packet.equals(PacketType.SUBSCRIBE)) {
+                            Subscriber newSubscriber = new Subscriber();
+                            newSubscriber.setObjectOutputStream(objectOutputStream);
+                            newSubscriber.setPortNo(port);
+                            if (BootStrap.topicSubscriberRegistry.containsKey(topic)) {
+                                Set<Subscriber> existingSubscribers = BootStrap.topicSubscriberRegistry.get(topic);
+                                if (existingSubscribers != null) {
+                                    existingSubscribers.add(newSubscriber);
+                                    BootStrap.topicSubscriberRegistry.put(topic, existingSubscribers);
+                                } // else case is never reached
+                            } else {
+                                Set<Subscriber> newSubscribers = new HashSet<>();
+                                newSubscribers.add(newSubscriber);
+                                BootStrap.topicSubscriberRegistry.put(topic, newSubscribers);
+                            }
 
-                        outputMap.put("packet", PacketType.SUBACK.getValue());
-                        outputMap.put("returnCode", true);
-                        Object object = outputMap;
-                        objectOutputStream.writeObject(object);
-                        System.out.println("Client subscribed : " + BootStrap.topicSubscriberRegistry);
-                    }
-                    if (PacketType.PUBLISH.equals(packet)) {
-                        // RESPONSE TO PUBLISHER
-                        outputMap.put("packet", PacketType.PUBACK.getValue());
-                        outputMap.put("returnCode", true);
-                        Object object = outputMap ;
-                        objectOutputStream.writeObject(object);
+                            outputMap.put("packet", PacketType.SUBACK.getValue());
+                            outputMap.put("returnCode", true);
+                            Object object = outputMap;
+                            objectOutputStream.writeObject(object);
+                            System.out.println("*** Client subscribed : " + BootStrap.topicSubscriberRegistry);
+                        }
+                        if(packet != null && packet.equals(PacketType.PUBLISH)) {
+                            if(BootStrap.topicSubscriberRegistry.containsKey(topic)){
+                                Set<Subscriber> subscribers = BootStrap.topicSubscriberRegistry.get(topic);
+                                if(!subscribers.isEmpty()){
+                                    // RESPONSE TO PUBLISHER
+                                    outputMap.put("packet", PacketType.PUBACK.getValue());
+                                    outputMap.put("returnCode", true);
+                                    Object object = outputMap ;
+                                    objectOutputStream.writeObject(object);
 
-                        // BROADCASTING
-                        Message messageDto = new Message();
-                        messageDto.setTopic(topic);
-                        messageDto.setMessage(message);
+                                    // BROADCASTING
+                                    Message messageDto = new Message();
+                                    messageDto.setTopic(topic);
+                                    messageDto.setMessage(message);
+                                    BootStrap.publishMessageQueue.add(messageDto);
 
-                        BootStrap.publishMessageQueue.add(messageDto);
-                        System.out.println("Message added in publish queue");
-                    }
-                    if (PacketType.UNSUBSCRIBE.equals(packet)) {
-                        outputMap.put("packet", PacketType.UNSUBACK.getValue());
-                        outputMap.put("returnCode", true);
-                        Object object = outputMap;
-                        objectOutputStream.writeObject(object);
+                                    System.out.println("*** Message added in publish queue ***");
+                                } else{
+                                    // A message is always discarded whose topic exists but have no subscribers
+                                    // Example : whatsapp group
+                                    System.out.println("*** Topic exists but have no subscribers ***");
+                                }
+                            } else{
+                                // A message is always discarded whose topic does not exist
+                                System.out.println("*** Topic does not exists ***");
+                            }
+                        }
+                        if(packet != null && packet.equals(PacketType.UNSUBSCRIBE)) {
+                            outputMap.put("packet", PacketType.UNSUBACK.getValue());
+                            outputMap.put("returnCode", true);
+                            Object object = outputMap;
+                            objectOutputStream.writeObject(object);
+                        }
                     }
                 }
             }
-            System.out.print("Client is closing");
+            System.out.print("*** Client is closing ***");
 
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port:" + e.getMessage());
