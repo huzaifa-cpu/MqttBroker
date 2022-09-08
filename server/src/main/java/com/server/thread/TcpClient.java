@@ -51,7 +51,7 @@ public class TcpClient implements Callable<String> {
                             outputMap.put("returnCode", true);
                             Object object = outputMap;
                             objectOutputStream.writeObject(object);
-                            System.out.println("Connection established with client on port no : " +port);
+                            System.out.println("*** Connection established with client on port : " +port + " ***");
                         }
                         if(packet != null && packet.equals(PacketType.SUBSCRIBE)) {
                             Subscriber newSubscriber = new Subscriber();
@@ -114,7 +114,7 @@ public class TcpClient implements Callable<String> {
             System.out.print("*** Client is closing ***");
 
         } catch (IOException e) {
-            System.out.println("Exception caught when trying to listen on port:" + e.getMessage());
+            System.out.println("*** Exception when trying to listen on port:" + e.getMessage() + " ***");
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

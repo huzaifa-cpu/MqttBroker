@@ -19,7 +19,7 @@ public class Publisher implements Callable<String> {
                 Message message = BootStrap.publishMessageQueue.take();  // take() : A blocking method
                 String topic = message.getTopic();
                 Set<Subscriber> subscribers = BootStrap.topicSubscriberRegistry.get(topic);
-                System.out.println("*** Number of subscribers : " + subscribers.size());
+                System.out.println("*** Number of subscribers : " + subscribers.size() + " ***");
                 for (Subscriber subscriber : subscribers) {
                     Map<String, Object> messageMap = new HashMap();
                     messageMap.put("topic", message.getTopic());
@@ -28,7 +28,7 @@ public class Publisher implements Callable<String> {
                     try {
                         subscriber.getObjectOutputStream().writeObject(messageObject);
                         subscriber.getObjectOutputStream().flush();
-                        System.out.println("*** Message sent to client with port no : " + subscriber.getPortNo());
+                        System.out.println("*** Message sent to client on port : " + subscriber.getPortNo() +" ***");
                     } catch (Exception ex){
                         ex.printStackTrace();
                     }
