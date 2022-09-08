@@ -1,4 +1,4 @@
-package com.server.enums;
+package com.client.enums;
 
 public enum PacketType {
     CONNECT("connect"),

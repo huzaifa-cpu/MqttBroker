@@ -1,7 +1,8 @@
 package com.server;
 
 import com.server.configs.ServerConfig;
-import com.server.dtos.MessageDto;
+import com.server.dtos.Message;
+import com.server.dtos.Subscriber;
 import com.server.thread.Publisher;
 import com.server.thread.TcpClient;
 import org.slf4j.Logger;
@@ -19,9 +20,9 @@ public class BootStrap {
 
     private final static Logger logger = LoggerFactory.getLogger(BootStrap.class.getName());
 
-    public static final ConcurrentMap<String, Set<ObjectOutputStream>> topicSubscriberRegistry = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, Set<Subscriber>> topicSubscriberRegistry = new ConcurrentHashMap<>();
 
-    public static final LinkedBlockingQueue<MessageDto> publishMessageQueue = new LinkedBlockingQueue<>();
+    public static final LinkedBlockingQueue<Message> publishMessageQueue = new LinkedBlockingQueue<>();
 
     public static void startMqttServer() {
         System.out.println("Server Started ... ");

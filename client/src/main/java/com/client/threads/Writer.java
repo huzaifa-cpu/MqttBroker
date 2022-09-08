@@ -2,6 +2,7 @@ package com.client.threads;
 
 import com.client.ClientApplication;
 import com.client.configs.ServerConfig;
+import com.client.enums.PacketType;
 
 import java.io.*;
 import java.net.Socket;
@@ -34,7 +35,7 @@ public class Writer extends Thread {
 
         try{
             // CONNECT request
-            Map<String, String> connectMap = new HashMap<>();
+            Map<String, Object> connectMap = new HashMap<>();
             connectMap.put("port", String.valueOf(clientSocket.getLocalPort()));
             connectMap.put("packet", "CONNECT");
             Object connectObject = connectMap;
@@ -48,18 +49,18 @@ public class Writer extends Thread {
                         map.put("port", String.valueOf(clientSocket.getLocalPort()));
                         connectMap.put("port", String.valueOf(clientSocket.getLocalPort()));
 
-                        if (fromUser.equals("SUBSCRIBE")) {
+                        if (fromUser.equalsIgnoreCase(PacketType.SUBSCRIBE.getValue())) {
                             System.out.print("Enter topic : ");
                             Scanner sc = new Scanner(System.in);
                             String topic = sc.nextLine();
 
-                            map.put("packet", "SUBSCRIBE");
+                            map.put("packet", PacketType.SUBSCRIBE.getValue());
                             map.put("topic", topic);
                             Object object = (Object) map;
                             oos.writeObject(object);
                         }
-                        else if (fromUser.equals("PUBLISH")) {
-                            Scanner sc = new Scanner(System.in);
+                    if (fromUser.equalsIgnoreCase(PacketType.PUBLISH.getValue())) {
+                        Scanner sc = new Scanner(System.in);
                             List<String> printData = new ArrayList<>();
                             printData.add("Topic");
                             printData.add("Message");
@@ -68,7 +69,7 @@ public class Writer extends Thread {
                                 System.out.print("Enter " + printData.get(i) + " : ");
                                 data.add(sc.nextLine());
                             }
-                            map.put("packet", "PUBLISH");
+                            map.put("packet", PacketType.PUBLISH.getValue());
                             map.put("topic", data.get(0));
                             map.put("message", data.get(1));
                             Object object = (Object) map;

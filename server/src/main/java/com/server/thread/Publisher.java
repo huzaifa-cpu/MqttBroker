@@ -1,7 +1,8 @@
 package com.server.thread;
 
 import com.server.BootStrap;
-import com.server.dtos.MessageDto;
+import com.server.dtos.Message;
+import com.server.dtos.Subscriber;
 
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -17,30 +18,31 @@ public class Publisher implements Callable<String> {
             System.out.println("Publisher thread started");
 
             while (!Thread.currentThread().isInterrupted()) {
-                MessageDto messageDto = BootStrap.publishMessageQueue.take();
+                Message messageDto = BootStrap.publishMessageQueue.take();
                 String topic = messageDto.getTopic();
 
                 if (BootStrap.topicSubscriberRegistry.containsKey(topic)) {
-                    Set<ObjectOutputStream> clients = BootStrap.topicSubscriberRegistry.get(topic);
-                    System.out.println("Number of subscribers : " + clients.size());
-                    for (ObjectOutputStream client : clients) {
-                        Map messageMap = new HashMap();
+                    Set<Subscriber> subscribers = BootStrap.topicSubscriberRegistry.get(topic);
+                    System.out.println("Number of subscribers : " + subscribers.size());
+                    for (Subscriber subscriber : subscribers) {
+                        Map<String, Object> messageMap = new HashMap();
                         messageMap.put("topic", messageDto.getTopic());
                         messageMap.put("message", messageDto.getMessage());
                         Object messageObject = messageMap;
                         try {
-                            client.writeObject(messageObject);
-                            client.flush();
-                            System.out.println("Message sent to client " + client);
+                            subscriber.getObjectOutputStream().writeObject(messageObject);
+                            subscriber.getObjectOutputStream().flush();
+                            System.out.println("Message sent to client " + subscriber);
                         }catch (Exception ex){
                            ex.printStackTrace();
                         }
-
                     }
                 }
             }
         }
-        catch (Exception e){}
+        catch (Exception e){
+            e.printStackTrace();
+        }
         return null;
     }
 }

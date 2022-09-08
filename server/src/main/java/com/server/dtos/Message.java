@@ -1,6 +1,6 @@
 package com.server.dtos;
 
-public class MessageDto {
+public class Message {
 
     private String topic;
     private String message;

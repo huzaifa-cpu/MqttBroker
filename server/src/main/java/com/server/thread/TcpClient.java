@@ -1,7 +1,9 @@
 package com.server.thread;
 
 import com.server.BootStrap;
-import com.server.dtos.MessageDto;
+import com.server.dtos.Message;
+import com.server.dtos.Subscriber;
+import com.server.enums.PacketType;
 
 import java.io.*;
 import java.net.Socket;
@@ -19,83 +21,83 @@ public class TcpClient implements Callable<String> {
     public String call() {
         try {
             // output object
-            OutputStream os = clientSocket.getOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(os);
+            OutputStream outputStream = clientSocket.getOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
 
             // input object
-            InputStream is = clientSocket.getInputStream();
-            ObjectInputStream ois = new ObjectInputStream(is);
+            InputStream inputStream = clientSocket.getInputStream();
+            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 
             // initialize
             Object inputObject = null;
 
             while(!Thread.interrupted()) {
-                while ((inputObject = ois.readObject()) != null) {
+                while ((inputObject = objectInputStream.readObject()) != null) {
 
-                    Map outputMap = new HashMap();
+                    Map<String, Object> outputMap = new HashMap();
                     Map inputMap = (Map) inputObject;
-                    String packet = (String) inputMap.get("packet");
+                    String packetValue = (String) inputMap.get("packet");
                     String topic = (String) inputMap.get("topic");
                     String message = (String) inputMap.get("message");
                     String port = (String) inputMap.get("port");
 
+                    PacketType packet = PacketType.findByValue(packetValue);
+
                     System.out.println("Client: " + inputMap);
 
-                    if (packet.equals("CONNECT")) {
-                        outputMap.put("packet", "CONNACK");
+                    if (PacketType.CONNECT.equals(packet)) {
+                        outputMap.put("packet", PacketType.CONNACK.getValue());
                         outputMap.put("returnCode", true);
                         Object object = outputMap;
-                        oos.writeObject(object);
+                        objectOutputStream.writeObject(object);
                         System.out.println("Connection established with client port : " +port);
                     }
-                    if (packet.equals("SUBSCRIBE")) {
+                    if (PacketType.SUBSCRIBE.equals(packet)) {
+                        Subscriber newSubscriber = new Subscriber();
+                        newSubscriber.setObjectOutputStream(objectOutputStream);
                         if (BootStrap.topicSubscriberRegistry.containsKey(topic)) {
-                            Set<ObjectOutputStream> existingClients = BootStrap.topicSubscriberRegistry.get(topic);
-                            if (existingClients != null) {
-                                existingClients.add(oos);
-                                BootStrap.topicSubscriberRegistry.put(topic, existingClients);
+                            Set<Subscriber> existingSubscribers = BootStrap.topicSubscriberRegistry.get(topic);
+                            if (existingSubscribers != null) {
+                                existingSubscribers.add(newSubscriber);
+                                BootStrap.topicSubscriberRegistry.put(topic, existingSubscribers);
                             }
                         } else {
-                            Set<ObjectOutputStream> newClients = new HashSet<>();
-                            newClients.add(oos);
-                            BootStrap.topicSubscriberRegistry.put(topic, newClients);
+                            Set<Subscriber> newSubscribers = new HashSet<>();
+                            newSubscribers.add(newSubscriber);
+                            BootStrap.topicSubscriberRegistry.put(topic, newSubscribers);
                         }
 
-                        outputMap.put("packet", "SUBACK");
+                        outputMap.put("packet", PacketType.SUBACK.getValue());
                         outputMap.put("returnCode", true);
                         Object object = outputMap;
-                        oos.writeObject(object);
+                        objectOutputStream.writeObject(object);
                         System.out.println("Client subscribed : " + BootStrap.topicSubscriberRegistry);
                     }
-                    if (packet.equals("PUBLISH")) {
-
+                    if (PacketType.PUBLISH.equals(packet)) {
                         // RESPONSE TO PUBLISHER
-                        outputMap.put("packet", "PUBACK");
+                        outputMap.put("packet", PacketType.PUBACK.getValue());
                         outputMap.put("returnCode", true);
                         Object object = outputMap ;
-                        oos.writeObject(object);
+                        objectOutputStream.writeObject(object);
 
                         // BROADCASTING
-                        MessageDto messageDto = new MessageDto();
+                        Message messageDto = new Message();
                         messageDto.setTopic(topic);
                         messageDto.setMessage(message);
 
                         BootStrap.publishMessageQueue.add(messageDto);
                         System.out.println("Message added in publish queue");
-
-
                     }
-                    if (packet.equals("UNSUBSCRIBE")) {
-                        outputMap.put("packet", "UNSUBACK");
+                    if (PacketType.UNSUBSCRIBE.equals(packet)) {
+                        outputMap.put("packet", PacketType.UNSUBACK.getValue());
                         outputMap.put("returnCode", true);
                         Object object = outputMap;
-                        oos.writeObject(object);
+                        objectOutputStream.writeObject(object);
                     }
-
-
                 }
             }
             System.out.print("Client is closing");
+
         } catch (IOException e) {
             System.out.println("Exception caught when trying to listen on port:" + e.getMessage());
             e.printStackTrace();
