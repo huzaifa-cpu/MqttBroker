@@ -15,15 +15,15 @@ public class ClientApplication {
 	public void execute() {
 		try {
 			Socket socket = new Socket(ServerConfig.getHost(), ServerConfig.getPort());
-			System.out.println("*** Connected to Server ***");
+			System.out.println("*** Connected to Server");
 
-			new Reader(socket, this).start();
 			new Writer(socket, this).start();
+			new Reader(socket, this).start();
 
 		} catch (UnknownHostException ex) {
-			System.out.println("*** Server not found: " + ex.getMessage() + " ***");
+			System.out.println("*** Server not found: " + ex.getMessage());
 		} catch (IOException ex) {
-			System.out.println("*** I/O Error: " + ex.getMessage() + " ***");
+			System.out.println("*** I/O Error: " + ex.getMessage());
 		}
 
 	}

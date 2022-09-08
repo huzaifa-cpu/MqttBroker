@@ -103,10 +103,27 @@ public class TcpClient implements Callable<String> {
                             }
                         }
                         if(packet != null && packet.equals(PacketType.UNSUBSCRIBE)) {
-                            outputMap.put("packet", PacketType.UNSUBACK.getValue());
-                            outputMap.put("returnCode", true);
-                            Object object = outputMap;
-                            objectOutputStream.writeObject(object);
+                            if(BootStrap.topicSubscriberRegistry.containsKey(topic)){
+                                Set<Subscriber> subscribers = BootStrap.topicSubscriberRegistry.get(topic);
+                                if(!subscribers.isEmpty()){
+                                    for(Subscriber subscriber : subscribers){
+                                        if(port.equals(subscriber.getPortNo())){
+                                            subscribers.remove(subscriber);
+                                        }
+                                    }
+                                    BootStrap.topicSubscriberRegistry.put(topic, subscribers);
+                                    // response to unsubscriber
+                                    outputMap.put("packet", PacketType.UNSUBACK.getValue());
+                                    outputMap.put("returnCode", true);
+                                    Object object = outputMap;
+                                    objectOutputStream.writeObject(object);
+                                } else{
+                                    System.out.println("*** Topic has no subscribers");
+                                }
+
+                            } else{
+                                System.out.println("*** Topic does not exists");
+                            }
                         }
                     }
                 }
