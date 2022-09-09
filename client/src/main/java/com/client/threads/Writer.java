@@ -54,17 +54,14 @@ public class Writer extends Thread {
                         oos.writeObject(object);
                     }
                     else if (packet != null && packet.equals(PacketType.PUBLISH)) {
-                        List<String> printData = new ArrayList<>();
-                        printData.add("Topic");
-                        printData.add("Message");
-                        List<String> data = new ArrayList<>();
-                        for (int i = 0; i < 2; i++) {
-                            System.out.print("Enter " + printData.get(i) + ": ");
-                            data.add(scanner.nextLine());
-                        }
+                        System.out.print("Enter topic: ");
+                        String topic = scanner.nextLine();
+                        System.out.print("Enter message: ");
+                        String message = scanner.nextLine();
+
                         outputMap.put("packet", PacketType.PUBLISH.getValue());
-                        outputMap.put("topic", data.get(0));
-                        outputMap.put("message", data.get(1));
+                        outputMap.put("topic", topic);
+                        outputMap.put("message", message);
                         Object object = outputMap;
                         oos.writeObject(object);
                     }
