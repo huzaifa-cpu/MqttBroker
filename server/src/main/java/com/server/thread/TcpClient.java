@@ -96,10 +96,18 @@ public class TcpClient implements Callable<String> {
                                     // A message is always discarded whose topic exists but have no subscribers
                                     // Example : whatsapp group
                                     System.out.println("*** Topic exists but have no subscribers");
+                                    outputMap.put("message", "Topic exists but have no subscribers");
+                                    outputMap.put("returnCode", false);
+                                    Object object = outputMap;
+                                    objectOutputStream.writeObject(object);
                                 }
                             } else{
                                 // A message is always discarded whose topic does not exist
                                 System.out.println("*** Topic does not exists");
+                                outputMap.put("message", "Topic does not exists");
+                                outputMap.put("returnCode", false);
+                                Object object = outputMap;
+                                objectOutputStream.writeObject(object);
                             }
                         }
                         if(packet != null && packet.equals(PacketType.UNSUBSCRIBE)) {
@@ -119,10 +127,18 @@ public class TcpClient implements Callable<String> {
                                     objectOutputStream.writeObject(object);
                                 } else{
                                     System.out.println("*** Topic has no subscribers");
+                                    outputMap.put("message", "Topic has no subscribers");
+                                    outputMap.put("returnCode", false);
+                                    Object object = outputMap;
+                                    objectOutputStream.writeObject(object);
                                 }
 
                             } else{
                                 System.out.println("*** Topic does not exists");
+                                outputMap.put("message", "Topic does not exists");
+                                outputMap.put("returnCode", false);
+                                Object object = outputMap;
+                                objectOutputStream.writeObject(object);
                             }
                         }
                     }

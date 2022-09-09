@@ -38,7 +38,7 @@ public class Writer extends Thread {
 
                 String packetType = scanner.nextLine();
                 if (!packetType.isEmpty()) {
-                    packetType = packetType.trim().replaceAll(" ","");
+                    packetType = packetType.trim().replaceAll(" ","").toLowerCase();
                     PacketType packet = PacketType.findByValue(packetType);
 
                     Map<String, String> outputMap = new HashMap<>();
@@ -53,7 +53,7 @@ public class Writer extends Thread {
                         Object object = outputMap;
                         oos.writeObject(object);
                     }
-                    if (packet != null && packet.equals(PacketType.PUBLISH)) {
+                    else if (packet != null && packet.equals(PacketType.PUBLISH)) {
                         List<String> printData = new ArrayList<>();
                         printData.add("Topic");
                         printData.add("Message");
@@ -68,7 +68,7 @@ public class Writer extends Thread {
                         Object object = outputMap;
                         oos.writeObject(object);
                     }
-                    if (packet != null && packet.equals(PacketType.UNSUBSCRIBE)) {
+                    else if (packet != null && packet.equals(PacketType.UNSUBSCRIBE)) {
                         System.out.print("Enter topic: ");
                         String topic = scanner.nextLine();
 
@@ -76,6 +76,9 @@ public class Writer extends Thread {
                         outputMap.put("topic", topic);
                         Object object = outputMap;
                         oos.writeObject(object);
+                    }
+                    else {
+                        System.out.println("*** Incorrect packet or spelling mistake");
                     }
                 }
             }
