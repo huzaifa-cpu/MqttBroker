@@ -1,5 +1,5 @@
 # MqttBroker
-An MQTT broker (server) and Client written from scratch.
+An MQTT broker(server) and Client written from scratch in Java.
 
 `Tools used`:
 1. Java
