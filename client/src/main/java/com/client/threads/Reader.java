@@ -2,6 +2,8 @@ package com.client.threads;
 
 import com.client.ClientApplication;
 import com.client.configs.ServerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.Socket;
@@ -9,6 +11,8 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 public class Reader extends Thread {
+
+    private final static Logger logger = LoggerFactory.getLogger(Reader.class.getName());
 
     private Socket clientSocket;
     private ClientApplication client;
@@ -40,15 +44,16 @@ public class Reader extends Thread {
                         String topic = (String) inputMap.get("topic");
                         if(!topic.isEmpty() && !message.isEmpty()){
                             System.out.println("Message from publisher: " + inputMap);
+                            logger.info("Message receive from publisher");
                         }
                     }
                 }
             }
         } catch (UnknownHostException e) {
-            System.err.println("*** Unknown Host Exception " + ServerConfig.getHost() + " ***");
+            logger.error("*** Unknown Host Exception " + ServerConfig.getHost());
             System.exit(1);
         } catch (IOException e) {
-            System.err.println("*** Couldn't get I/O for the host " + ServerConfig.getHost() + " ***");
+            logger.error("*** Couldn't get I/O for the host " + ServerConfig.getHost());
             System.exit(1);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

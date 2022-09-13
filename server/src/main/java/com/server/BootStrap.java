@@ -7,15 +7,15 @@ import com.server.thread.Publisher;
 import com.server.thread.TcpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.*;
 
-
+@Component
 public class BootStrap {
 
     private final static Logger logger = LoggerFactory.getLogger(BootStrap.class.getName());
@@ -25,7 +25,7 @@ public class BootStrap {
     public static final LinkedBlockingQueue<Message> publishMessageQueue = new LinkedBlockingQueue<>();
 
     public static void startMqttServer() {
-        System.out.println("*** Server Started");
+        logger.info("*** Server Started");
         try {
             ExecutorService publishQueueExecutor = Executors.newFixedThreadPool(10);
             publishQueueExecutor.submit(new Publisher());
@@ -41,9 +41,15 @@ public class BootStrap {
             // review the below code
             if(Thread.interrupted()){
                 tcpServerExecutor.shutdown();
+                publishQueueExecutor.shutdown();
             }
             if(!tcpServerExecutor.isTerminated()){
                 tcpServerExecutor.awaitTermination(10000, TimeUnit.MILLISECONDS);
+                tcpServerExecutor.shutdownNow();
+            }
+            if(!publishQueueExecutor.isTerminated()){
+                publishQueueExecutor.awaitTermination(10000, TimeUnit.MILLISECONDS);
+                publishQueueExecutor.shutdownNow();
             }
         }
 
