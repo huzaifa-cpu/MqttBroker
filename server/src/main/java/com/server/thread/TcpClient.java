@@ -118,9 +118,11 @@ public class TcpClient implements Callable<String> {
                                 if(BootStrap.topicSubscriberRegistry.containsKey(topic)){
                                     Set<Subscriber> subscribers = BootStrap.topicSubscriberRegistry.get(topic);
                                     if(!subscribers.isEmpty()){
-                                        for(Subscriber subscriber : subscribers){
+                                        Iterator<Subscriber> itr = subscribers.iterator();
+                                        while(itr.hasNext()){
+                                            Subscriber subscriber = itr.next();
                                             if(port.equals(subscriber.getPortNo())){
-                                                subscribers.remove(subscriber);
+                                                itr.remove();
                                             }
                                         }
                                         BootStrap.topicSubscriberRegistry.put(topic, subscribers);
